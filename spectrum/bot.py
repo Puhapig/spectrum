@@ -8,7 +8,7 @@ import math
 from discord.ext import commands
 import platform
 
-client = commands.Bot(description='Changes role colour on command', command_prefix=commands.when_mentioned_or('clr '), pm_help=False)
+client = commands.Bot(description='Changes role colour on command', command_prefix=commands.when_mentioned_or('colour '), pm_help=False)
 startup_extensions = ["colour"]
 
 @client.event
