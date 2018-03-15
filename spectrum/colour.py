@@ -8,22 +8,33 @@ import math
 from discord.ext import commands
 import platform
 
+
+def all_colour_names():
+    dict = discord.Colour.__dict__
+    return [key for key, val in dict.items() if type(val) == classmethod]
+
+
 class Colour():
     def __init__(self, client):
         self.client = client
 
-    @commands.command(pass_context=True, help='Set role colour using a 6-digit hex value')
-    async def set(self, ctx, role_name : str, colour_hex : str):
-        print('invoked set with args:', role_name, colour_hex)
+    @commands.command(pass_context=True,
+                      help='Set role to a named colour or a 6-digit hex value\n\n'
+                      'Valid colour values are:\n{}'.format(', '.join(all_colour_names())))
+    async def set(self, ctx, role_name : str, colour_input : str):
+        print('invoked set with args:', role_name, colour_input)
         """Sets a role to the specific colour"""
         author_roles = ctx.message.author.roles
         server = ctx.message.server
 
         try:
             role = self.role_available(role_name, author_roles)
-            colour = self.colour_from_hex(colour_hex)
+            colour = self.colour_by_name(colour_input) or self.colour_from_hex(colour_input)
         except ValueError as e:
-            await self.client.say(e)
+            if colour_string[0] == '#':
+                await self.client.say(e)
+            else:
+                await self.client.say('{} is not a valid colour, see <prefix> help set for valid colours.'.format(colour_string))
             return
 
         await self.client.edit_role(server, role, colour=colour)
@@ -49,24 +60,6 @@ class Colour():
                 print('changing colour to', clr)
                 await self.client.edit_role(server, role, colour=self.colour_from_hex(self.rgb_to_hex(clr)))
 
-    def make_colour_gradient(self,
-                             frequency1,
-                             frequency2,
-                             frequency3,
-                             phase1,
-                             phase2,
-                             phase3,
-                             center=128,
-                             width=127,
-                             length=50):
-
-        colours = []
-        for i in range(length):
-            r = math.sin(frequency1 * i + phase1) * width + center
-            g = math.sin(frequency2 * i + phase2) * width + center
-            b = math.sin(frequency3 * i + phase3) * width + center
-            colours.append((r, g, b))
-        return colours
 
     def role_available(self, role_name, role_list):
         '''Attempt to get a role matching role_name, case insensitive'''
@@ -79,6 +72,15 @@ class Colour():
         rgb = tuple(x for x in map(round, rgb))
         return '#%02x%02x%02x' % rgb
 
+    @staticmethod
+    def colour_by_name(name):
+        try:
+            colour = getattr(discord.Colour, name)
+            return colour()
+        except AttributeError:
+            print('colour not found, {}'.format(name))
+            return None
+
     def colour_from_hex(self, code):
         if not re.match(r'#[\da-fA-F]{6}$', code):
             raise ValueError('`%s` is not a valid hex colour value' % code)
@@ -87,7 +89,16 @@ class Colour():
         value = int(code[1:], 16)
         return discord.Colour(value)
 
+    def make_colour_gradient(self, frequency1, frequency2, frequency3, phase1, phase2, phase3,
+                             center=128, width=127, length=50):
+        colours = []
+        for i in range(length):
+            r = math.sin(frequency1 * i + phase1) * width + center
+            g = math.sin(frequency2 * i + phase2) * width + center
+            b = math.sin(frequency3 * i + phase3) * width + center
+            colours.append((r, g, b))
+        return colours
+
 
 def setup(client):
     client.add_cog(Colour(client))
-
