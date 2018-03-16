@@ -9,9 +9,11 @@ from discord.ext import commands
 import platform
 
 
-def all_colour_names():
+def all_valid_colours():
     dict = discord.Colour.__dict__
     return [key for key, val in dict.items() if type(val) == classmethod]
+
+valid_colours = ', '.join(all_valid_colours())
 
 
 class Colour():
@@ -22,27 +24,24 @@ class Colour():
     @commands.command(
         pass_context=True,
         help='Set role to a named colour or a 6-digit hex value\n\n'
-        'Valid colour values are:\n{}'.format(', '.join(all_colour_names())),
+        'Valid colour values are:\n\n'
+        f'{valid_colours}',
     )
     async def set(self, ctx, role_name: str, colour_input: str):
-        print('invoked set with args:', role_name, colour_input)
         """Sets a role to the specific colour"""
+
         author_roles = ctx.message.author.roles
         server = ctx.message.server
+
         try:
             role = self.role_available(role_name, author_roles)
-            colour = self.colour_by_name(colour_input) or self.colour_from_hex(
-                colour_input
-            )
+            colour = self.colour_by_name(colour_input) or self.colour_from_hex(colour_input)
         except ValueError as e:
             if colour_input[0] == '#':
                 await self.client.say(e)
             else:
-                await self.client.say(
-                    'The colour `{}` was not found. See `<prefix> help set` for supported colours.'.format(
-                        colour_input
-                    )
-                )
+                await self.client.say(f'The colour `{colour_input}` was not found.'
+                                      'Try `@{self.client.user.name} help set`')
             return
 
         await self.client.edit_role(server, role, colour=colour)
@@ -75,9 +74,7 @@ class Colour():
             if role_name.lower() == role.name.lower():
                 return role
 
-        raise ValueError(
-            "You don't have the `%s` role so I can't help, sorry" % role_name
-        )
+        raise ValueError("You don't have the `{role_name}` role so I can't help, sorry")
 
     def rgb_to_hex(self, rgb):
         rgb = tuple(x for x in map(round, rgb))
