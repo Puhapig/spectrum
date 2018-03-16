@@ -7,7 +7,7 @@ import platform
 
 client = commands.Bot(
     description='Changes role colour on command',
-    command_prefix=commands.when_mentioned_or('colour '),
+    command_prefix=commands.when_mentioned_or('!colour '),
     pm_help=False,
 )
 startup_extensions = ["colour"]
