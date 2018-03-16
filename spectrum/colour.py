@@ -15,58 +15,69 @@ def all_colour_names():
 
 
 class Colour():
+
     def __init__(self, client):
         self.client = client
 
-    @commands.command(pass_context=True,
-                      help='Set role to a named colour or a 6-digit hex value\n\n'
-                      'Valid colour values are:\n{}'.format(', '.join(all_colour_names())))
-    async def set(self, ctx, role_name : str, colour_input : str):
+    @commands.command(
+        pass_context=True,
+        help='Set role to a named colour or a 6-digit hex value\n\n'
+        'Valid colour values are:\n{}'.format(', '.join(all_colour_names())),
+    )
+    async def set(self, ctx, role_name: str, colour_input: str):
         print('invoked set with args:', role_name, colour_input)
         """Sets a role to the specific colour"""
         author_roles = ctx.message.author.roles
         server = ctx.message.server
-
         try:
             role = self.role_available(role_name, author_roles)
-            colour = self.colour_by_name(colour_input) or self.colour_from_hex(colour_input)
+            colour = self.colour_by_name(colour_input) or self.colour_from_hex(
+                colour_input
+            )
         except ValueError as e:
-            if colour_string[0] == '#':
+            if colour_input[0] == '#':
                 await self.client.say(e)
             else:
-                await self.client.say('{} is not a valid colour, see <prefix> help set for valid colours.'.format(colour_string))
+                await self.client.say(
+                    'The colour `{}` was not found. See `<prefix> help set` for supported colours.'.format(
+                        colour_input
+                    )
+                )
             return
 
         await self.client.edit_role(server, role, colour=colour)
         await self.client.say("lookin' good, good lookin'")
 
     @commands.command(pass_context=True, help='[DISABLED due to being too amazing]')
-    async def rainbow(self, ctx, role_name : str):
-        return await self.client.say(':rainbow:') # disabled until further notice
+    async def rainbow(self, ctx, role_name: str):
+        return await self.client.say(':rainbow:')  # disabled until further notice
 
         print('invoked rainbow with args:', role_name)
         author_roles = ctx.message.author.roles
         server = ctx.message.server
-
         try:
             role = self.role_available(role_name, author_roles)
         except ValueError as e:
             await self.client.say(e)
             return
 
-        colour_rotation = self.make_colour_gradient(.05,.05,.05,0,2,4, length=126)
+        colour_rotation = self.make_colour_gradient(.05, .05, .05, 0, 2, 4, length=126)
         while True:
             for clr in colour_rotation:
                 print('changing colour to', clr)
-                await self.client.edit_role(server, role, colour=self.colour_from_hex(self.rgb_to_hex(clr)))
-
+                await self.client.edit_role(
+                    server, role, colour=self.colour_from_hex(self.rgb_to_hex(clr))
+                )
 
     def role_available(self, role_name, role_list):
         '''Attempt to get a role matching role_name, case insensitive'''
         for role in role_list:
             if role_name.lower() == role.name.lower():
                 return role
-        raise ValueError("You don't have the `%s` role so I can't help, sorry" % role_name)
+
+        raise ValueError(
+            "You don't have the `%s` role so I can't help, sorry" % role_name
+        )
 
     def rgb_to_hex(self, rgb):
         rgb = tuple(x for x in map(round, rgb))
@@ -77,6 +88,7 @@ class Colour():
         try:
             colour = getattr(discord.Colour, name)
             return colour()
+
         except AttributeError:
             print('colour not found, {}'.format(name))
             return None
@@ -89,8 +101,18 @@ class Colour():
         value = int(code[1:], 16)
         return discord.Colour(value)
 
-    def make_colour_gradient(self, frequency1, frequency2, frequency3, phase1, phase2, phase3,
-                             center=128, width=127, length=50):
+    def make_colour_gradient(
+        self,
+        frequency1,
+        frequency2,
+        frequency3,
+        phase1,
+        phase2,
+        phase3,
+        center=128,
+        width=127,
+        length=50,
+    ):
         colours = []
         for i in range(length):
             r = math.sin(frequency1 * i + phase1) * width + center
