@@ -41,7 +41,7 @@ class Colour():
                 await self.client.say(e)
             else:
                 await self.client.say(f'The colour `{colour_input}` was not found.'
-                                      'Try `@{self.client.user.name} help set`')
+                                      f'Try `@{self.client.user.name} help set`')
             return
 
         await self.client.edit_role(server, role, colour=colour)
@@ -74,7 +74,7 @@ class Colour():
             if role_name.lower() == role.name.lower():
                 return role
 
-        raise ValueError("You don't have the `{role_name}` role so I can't help, sorry")
+        raise ValueError(f"You don't have the `{role_name}` role so I can't help, sorry")
 
     def rgb_to_hex(self, rgb):
         rgb = tuple(x for x in map(round, rgb))
