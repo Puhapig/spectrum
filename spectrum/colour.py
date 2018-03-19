@@ -35,13 +35,12 @@ class Colour():
 
         try:
             role = self.role_available(role_name, author_roles)
-            colour = self.colour_by_name(colour_input) or self.colour_from_hex(colour_input)
-        except ValueError as e:
             if colour_input[0] == '#':
-                await self.client.say(e)
+                self.colour_from_hex(colour_input)
             else:
-                await self.client.say(f'The colour `{colour_input}` was not found.'
-                                      f'Try `@{self.client.user.name} help set`')
+                colour = self.colour_by_name(colour_input)
+        except (AttributeError, ValueError) as e:
+            await self.client.say(str(e) + f'\nSee `@{self.client.user.name} help set` for details.')
             return
 
         await self.client.edit_role(server, role, colour=colour)
@@ -49,9 +48,9 @@ class Colour():
 
     @commands.command(pass_context=True, help='[DISABLED due to being too amazing]')
     async def rainbow(self, ctx, role_name: str):
+        print('invoked rainbow with args:', role_name)
         return await self.client.say(':rainbow:')  # disabled until further notice
 
-        print('invoked rainbow with args:', role_name)
         author_roles = ctx.message.author.roles
         server = ctx.message.server
         try:
@@ -85,10 +84,8 @@ class Colour():
         try:
             colour = getattr(discord.Colour, name)
             return colour()
-
         except AttributeError:
-            print('colour not found, {}'.format(name))
-            return None
+            raise ValueError(f'The colour `{name}` was not found.')
 
     def colour_from_hex(self, code):
         if not re.match(r'#[\da-fA-F]{6}$', code):
