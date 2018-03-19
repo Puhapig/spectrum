@@ -4,6 +4,9 @@ from discord.ext import commands
 
 import argparse
 import platform
+import os
+
+TOKEN_ENV_VAR = 'DISCORD_TOKEN'
 
 client = commands.Bot(
     description='Changes role colour on command',
@@ -30,7 +33,10 @@ if __name__ == "__main__":
         except Exception as e:
             exception_type = type(e).__name__
             print(f'Failed to load extension {extension}\n{exception_type}: {e}')
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--token', required=True, type=str)
+    parser.add_argument('-t', '--token', type=str)
     args = parser.parse_args()
-    client.run(args.token)
+
+    token = os.environ[TOKEN_ENV_VAR] if (TOKEN_ENV_VAR in os.environ) else args.token
+    client.run(token)
