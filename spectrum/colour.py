@@ -1,12 +1,11 @@
-import discord
 import asyncio
-
-import argparse
-import re
-import math
-
+import discord
 from discord.ext import commands
-import platform
+
+import logging
+import re
+
+logger = logging.getLogger('discord-spectrum')
 
 
 def all_valid_colours():
@@ -17,7 +16,6 @@ valid_colours = ', '.join(all_valid_colours())
 
 
 class Colour():
-
     def __init__(self, client):
         self.client = client
 
@@ -29,6 +27,9 @@ class Colour():
     )
     async def set(self, ctx, role_name: str, colour_input: str):
         """Sets a role to the specific colour"""
+        logger.info(f"Invoked {ctx.command} with: '{ctx.message.content}'")
+        logger.debug(f'├── Discord guild: {ctx.message.server}')
+        logger.debug(f'└── Author: {ctx.message.author}')
 
         author_roles = ctx.message.author.roles
         server = ctx.message.server
@@ -40,8 +41,7 @@ class Colour():
             else:
                 colour = self.colour_by_name(colour_input)
         except (AttributeError, ValueError) as e:
-            await self.client.say(str(e) + f'\nSee `@{self.client.user.name} help set` for details.')
-            return
+            return await self.client.say(str(e) + f'\nSee `@{self.client.user.name} help set` for details.')
 
         await self.client.edit_role(server, role, colour=colour)
         await self.client.say("lookin' good, good lookin'")
